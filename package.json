@@ -1,0 +1,20 @@
+{
+  "name": "hijackdrone_server",
+  "version": "1.0.0",
+  "main": "app.js",
+  "repository": "https://github.com/hijackdrone/hijackdrone-server.git",
+  "author": "lsb918 <lsb918@uos.ac.kr>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.4",
+    "socket.io": "^2.2.0"
+  },
+  "scripts": {
+    "client": "cd ./client/hijackdrone_client && yarn start",
+    "server": "node app.js",
+    "start": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0"
+  }
+}
