@@ -28,6 +28,9 @@ io.on('connection', (socket)=>{
         const roomAvailable = checkRoom(idx,pw,type); //[ true|false, errorMessage ]
         if(roomAvailable[0]){
             socket.emit('found room',pw);
+            if(roomAvailable[1]){
+                socket.emit('connected')
+            }
         }else{
             socket.emit('rejected room',pw);
         }
@@ -59,7 +62,7 @@ const checkRoom=(idx,pw,type)=>{
 
             if( type === 'd') room[idx].drone=true;
             else room[idx].controller=true;
-            return [true];
+            return [true,'1:1 connected'];
         }else return [false, '1:1 connection already made.'];
     }else{
         if(type==='d'){
