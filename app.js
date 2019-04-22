@@ -11,13 +11,22 @@ server.listen(port)
 app.get('/',(req,res)=>{
     res.end('Welcome to API server.');
 });
+let users=0;
 
 io.on('connection', (socket)=>{
-    console.log('user connected');
+    console.log('user connected',++users);
+
     socket.on('disconnect',()=>{
         console.log('user disconnected');
+        users--;
     });
+
     socket.on('method1',value=>{
         console.log(value);
+    });
+
+    socket.on('json', value=>{
+        console.log(value);
+        socket.broadcast.emit('send to react',value);
     });
 })
