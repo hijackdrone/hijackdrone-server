@@ -10,9 +10,7 @@
     "socket.io": "^2.2.0"
   },
   "scripts": {
-    "client": "cd ./client/hijackdrone_client && yarn start",
-    "server": "node app.js",
-    "start": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
+    "server": "node app.js"
   },
   "devDependencies": {
     "concurrently": "^4.1.0"
