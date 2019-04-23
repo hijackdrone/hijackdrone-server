@@ -16,7 +16,9 @@ let room=[];
 
 io.on('connection', (socket)=>{
     console.log('user connected',++users);
-
+    socket.on('greeting',(value)=>{
+        console.log(value);
+    });
     socket.on('disconnect',()=>{
         console.log('user disconnected');
         users--;
@@ -26,13 +28,17 @@ io.on('connection', (socket)=>{
     socket.on('find room', (pw,type)=>{
         const idx=room.findIndex(e=>e.pw === pw);
         const roomAvailable = checkRoom(idx,pw,type); //[ true|false, errorMessage ]
+        console.log(socket.id);
+
         if(roomAvailable[0]){
-            socket.emit('found room',pw);
+            socket.emit('found room');
+            console.log('found room');
             if(roomAvailable[1]){
-                socket.emit('connected')
+                socket.to(pw).emit('connected')
             }
         }else{
-            socket.emit('rejected room',pw);
+            socket.emit('rejected room');
+            console.log('rejected room',roomAvailable[1]);
         }
     });
     socket.on('leave room',(pw,type)=>{
@@ -53,7 +59,7 @@ io.on('connection', (socket)=>{
 })
 
 const checkRoom=(idx,pw,type)=>{
-    if(idx<0) return [false, 'can\'t find room'];
+    // if(idx<0) return [false, 'can\'t find room'];
     if(room[idx]){ //room exist?
         if(room[idx].user === 1){
             room[idx].user++;
