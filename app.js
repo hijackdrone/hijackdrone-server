@@ -25,7 +25,9 @@ io.on('connection', (socket)=>{
     });
 
     // 2 joining room
-    socket.on('find room', (pw,type)=>{
+    socket.on('find room', value=>{
+        pw=value[0];
+        type=value[1];
         const idx=room.findIndex(e=>e.pw === pw);
         const roomAvailable = checkRoom(idx,pw,type); //[ true|false, errorMessage ]
         console.log(socket.id);
@@ -41,7 +43,9 @@ io.on('connection', (socket)=>{
             console.log('rejected room',roomAvailable[1]);
         }
     });
-    socket.on('leave room',(pw,type)=>{
+    socket.on('leave room',value=>{
+        pw=value[0];
+        type=value[1];
         const idx=room.findIndex(e=>e.pw === pw);
         if(idx<0) socket.to(pw).emit('error', 'room not existing');
         else{
@@ -61,6 +65,7 @@ io.on('connection', (socket)=>{
 const checkRoom=(idx,pw,type)=>{
     // if(idx<0) return [false, 'can\'t find room'];
     if(room[idx]){ //room exist?
+        console.log('room exist');
         if(room[idx].user === 1){
             room[idx].user++;
             const existUserType = room[idx].drone?'d':'c';
@@ -71,6 +76,7 @@ const checkRoom=(idx,pw,type)=>{
             return [true,'1:1 connected'];
         }else return [false, '1:1 connection already made.'];
     }else{
+        console.log('room doesn\'t exist');
         if(type==='d'){
             room.push({
                 pw, user:1, drone: true, control: false
