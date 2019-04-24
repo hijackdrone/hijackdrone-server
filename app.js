@@ -31,12 +31,15 @@ io.on('connection', (socket)=>{
         const idx=room.findIndex(e=>e.pw === pw);
         const roomAvailable = checkRoom(idx,pw,type); //[ true|false, errorMessage ]
         console.log(socket.id);
+        console.log(roomAvailable);
 
         if(roomAvailable[0]){
             socket.emit('found room');
             console.log('found room');
-            if(roomAvailable[1]){
-                socket.to(pw).emit('connected')
+            socket.join(pw);
+            if(roomAvailable[1]===true){
+                socket.emit('connected');
+                socket.to(pw).emit('connected');
             }
         }else{
             socket.emit('rejected room');
@@ -46,13 +49,16 @@ io.on('connection', (socket)=>{
     socket.on('leave room',value=>{
         pw=value[0];
         type=value[1];
-        const idx=room.findIndex(e=>e.pw === pw);
-        if(idx<0) socket.to(pw).emit('error', 'room not existing');
-        else{
-            room[idx].user--;
-            if(type==='d')room[idx].drone=false;
-            else room[idx].control=false;
-            if(room[idx].user === 0) room.splice(idx,1);
+        if(pw!==''){
+            const idx=room.findIndex(e=>e.pw === pw);
+            if(idx<0) socket.emit('error', 'room not existing');
+            else{
+                socket.leave(pw);
+                room[idx].user--;
+                if(type==='d')room[idx].drone=false;
+                else room[idx].control=false;
+                if(room[idx].user === 0) room.splice(idx,1);
+            }
         }
     });
     // 3 controll with drone & controller
@@ -70,10 +76,9 @@ const checkRoom=(idx,pw,type)=>{
             room[idx].user++;
             const existUserType = room[idx].drone?'d':'c';
             if( existUserType === type ) return [false, `${existUserType} already exists.`];
-
             if( type === 'd') room[idx].drone=true;
             else room[idx].controller=true;
-            return [true,'1:1 connected'];
+            return [true,true];
         }else return [false, '1:1 connection already made.'];
     }else{
         console.log('room doesn\'t exist');
@@ -87,6 +92,6 @@ const checkRoom=(idx,pw,type)=>{
                 pw, user:1, drone: false, control: true
             });
         }
-        return [true];
+        return [true,`made room ${pw}`];
     }
 }
