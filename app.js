@@ -50,8 +50,9 @@ io.on('connection', (socket)=>{
         pw=value[0];
         type=value[1];
         if(pw!==''){
+            console.log(room,pw);
             const idx=room.findIndex(e=>e.pw === pw);
-            if(idx<0) socket.emit('error', 'room not existing');
+            if(idx<0) socket.emit('err', 'room not existing');
             else{
                 socket.leave(pw);
                 room[idx].user--;
