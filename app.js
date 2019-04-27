@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 
 const port = 4001;
 
@@ -17,7 +17,7 @@ let room=[];
 io.on('connection', (socket)=>{
     console.log('user connected',++users);
     socket.on('greeting',(value)=>{
-        console.log(value);
+        console.log(value,socket.id);
     });
     socket.on('disconnect',()=>{
         console.log('user disconnected');
