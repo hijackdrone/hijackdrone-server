@@ -21,10 +21,8 @@ io.on('connection', (socket)=>{
         console.log(value,id);
     });
     socket.on('disconnect',()=>{
-        // const id=socket.id;
         console.log(`user ${id} disconnected`);
         if(room.length>0){
-            // console.log(room)
             const idx=room.findIndex(e=> e.drone[1]===id || e.control[1]===id)
             if(idx>=0){
                 if(room[idx].drone[1]===id) room[idx].drone=[false,''];
@@ -33,7 +31,7 @@ io.on('connection', (socket)=>{
                 if(--room[idx].user===0) room.splice(idx,1);
             }
         }
-        console.log(room)
+        console.log('room :',room)
         users--;
     });
 
