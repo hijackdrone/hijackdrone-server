@@ -15,19 +15,20 @@ let users=0;
 let room=[];
 
 io.on('connection', (socket)=>{
-    console.log('user connected',++users);
+    const id=socket.id;
+    console.log(`user ${id} connected`,++users);
     socket.on('greeting',(value)=>{
-        console.log(value,socket.id);
+        console.log(value,id);
     });
     socket.on('disconnect',()=>{
-        const id=socket.id;
-        console.log(`${id} user disconnected`);
+        // const id=socket.id;
+        console.log(`user ${id} disconnected`);
         if(room.length>0){
             // console.log(room)
-            const idx=room.findIndex(e=> e.drone[1]===id || e.controller[1]===id)
+            const idx=room.findIndex(e=> e.drone[1]===id || e.control[1]===id)
             if(idx>=0){
                 if(room[idx].drone[1]===id) room[idx].drone=[false,''];
-                else room[idx].controller=[false,''];
+                else room[idx].control=[false,''];
 
                 if(--room[idx].user===0) room.splice(idx,1);
             }
