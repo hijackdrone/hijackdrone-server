@@ -20,7 +20,19 @@ io.on('connection', (socket)=>{
         console.log(value,socket.id);
     });
     socket.on('disconnect',()=>{
-        console.log('user disconnected');
+        const id=socket.id;
+        console.log(`${id} user disconnected`);
+        if(room.length>0){
+            // console.log(room)
+            const idx=room.findIndex(e=> e.drone[1]===id || e.controller[1]===id)
+            if(idx>=0){
+                if(room[idx].drone[1]===id) room[idx].drone=[false,''];
+                else room[idx].controller=[false,''];
+
+                if(--room[idx].user===0) room.splice(idx,1);
+            }
+        }
+        console.log(room)
         users--;
     });
 
@@ -29,8 +41,7 @@ io.on('connection', (socket)=>{
         pw=value[0];
         type=value[1];
         const idx=room.findIndex(e=>e.pw === pw);
-        const roomAvailable = checkRoom(idx,pw,type); //[ true|false, errorMessage ]
-        console.log(socket.id);
+        const roomAvailable = checkRoom(idx,pw,type,socket.id); //[ true|false, errorMessage ]
         console.log(roomAvailable);
 
         if(roomAvailable[0]){
@@ -50,15 +61,15 @@ io.on('connection', (socket)=>{
         pw=value[0];
         type=value[1];
         if(pw!==''){
-            console.log(room,pw);
             const idx=room.findIndex(e=>e.pw === pw);
             if(idx<0) socket.emit('err', 'room not existing');
             else{
                 socket.leave(pw);
                 room[idx].user--;
-                if(type==='d')room[idx].drone=false;
-                else room[idx].control=false;
+                if(type==='d')room[idx].drone=[false,''];
+                else room[idx].control=[false,''];
                 if(room[idx].user === 0) room.splice(idx,1);
+                console.log(room);
             }
         }
     });
@@ -69,28 +80,28 @@ io.on('connection', (socket)=>{
     });
 })
 
-const checkRoom=(idx,pw,type)=>{
+const checkRoom=(idx,pw,type,socketID)=>{
     // if(idx<0) return [false, 'can\'t find room'];
     if(room[idx]){ //room exist?
         console.log('room exist');
         if(room[idx].user === 1){
-            room[idx].user++;
-            const existUserType = room[idx].drone?'d':'c';
+            room[idx].user+=1;
+            const existUserType = room[idx].drone[0]?'d':'c';
             if( existUserType === type ) return [false, `${existUserType} already exists.`];
-            if( type === 'd') room[idx].drone=true;
-            else room[idx].controller=true;
+            if( type === 'd') room[idx].drone=[true,socketID];
+            else room[idx].controller=[true,socketID];
             return [true,true];
         }else return [false, '1:1 connection already made.'];
     }else{
         console.log('room doesn\'t exist');
         if(type==='d'){
             room.push({
-                pw, user:1, drone: true, control: false
+                pw, user:1, drone: [true, socketID], control: [false,'']
             });
         }
         else if(type==='c'){
             room.push({
-                pw, user:1, drone: false, control: true
+                pw, user:1, drone: [false,''], control: [true, socketID]
             });
         }
         return [true,`made room ${pw}`];
