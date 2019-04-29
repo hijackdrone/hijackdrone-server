@@ -74,8 +74,10 @@ io.on('connection', (socket)=>{
     });
     // 3 controll with drone & controller
     // maybe many room will be stucked here... considering 'move' moves to line 30
-    socket.on('move',(pw,value)=>{ 
-        socket.to(pw).emit('accept move',value);
+    socket.on('move',value=>{ 
+        const pw=value[0];
+        const data=value[1];
+        socket.to(pw).emit('accept move',data);
     });
 })
 
