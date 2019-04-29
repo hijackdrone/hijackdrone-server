@@ -44,7 +44,7 @@ io.on('connection', (socket)=>{
         console.log(roomAvailable);
 
         if(roomAvailable[0]){
-            socket.emit('found room');
+            socket.emit('found room', pw);
             console.log('found room');
             socket.join(pw);
             if(roomAvailable[1]===true){
