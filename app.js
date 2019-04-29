@@ -25,9 +25,14 @@ io.on('connection', (socket)=>{
         if(room.length>0){
             const idx=room.findIndex(e=> e.drone[1]===id || e.control[1]===id)
             if(idx>=0){
-                if(room[idx].drone[1]===id) room[idx].drone=[false,''];
-                else room[idx].control=[false,''];
-
+                if(room[idx].drone[1]===id){
+                    room[idx].drone=[false,''];
+                    socket.to(room[idx].pw).emit('drdis');
+                } 
+                else{
+                    room[idx].control=[false,''];
+                    socket.to(room[idx].pw).emit('crdis');
+                }
                 if(--room[idx].user===0) room.splice(idx,1);
             }
         }
