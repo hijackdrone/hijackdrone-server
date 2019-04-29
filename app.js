@@ -68,7 +68,7 @@ io.on('connection', (socket)=>{
                 if(type==='d')room[idx].drone=[false,''];
                 else room[idx].control=[false,''];
                 if(room[idx].user === 0) room.splice(idx,1);
-                console.log(room);
+                console.log('room :',room);
             }
         }
     });
@@ -77,7 +77,7 @@ io.on('connection', (socket)=>{
     socket.on('move',value=>{ 
         const pw=value[0];
         const data=value[1];
-        console.log(pw,data);
+        // console.log(pw,data);
         socket.to(pw).emit('accept move',data);
     });
 })
