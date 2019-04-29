@@ -68,10 +68,17 @@ io.on('connection', (socket)=>{
             const idx=room.findIndex(e=>e.pw === pw);
             if(idx<0) socket.emit('err', 'room not existing');
             else{
-                socket.leave(pw);
                 room[idx].user--;
-                if(type==='d')room[idx].drone=[false,''];
-                else room[idx].control=[false,''];
+                if(type==='d'){
+                    room[idx].drone=[false,''];
+                    socket.to(room[idx].pw).emit('drdis');
+                }
+                else {
+                    room[idx].control=[false,''];
+                    socket.to(room[idx].pw).emit('crdis');
+                }
+                socket.leave(pw);
+
                 if(room[idx].user === 0) room.splice(idx,1);
                 console.log('room :',room);
             }
