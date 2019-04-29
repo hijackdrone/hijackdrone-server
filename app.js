@@ -77,6 +77,7 @@ io.on('connection', (socket)=>{
     socket.on('move',value=>{ 
         const pw=value[0];
         const data=value[1];
+        console.log(pw,data);
         socket.to(pw).emit('accept move',data);
     });
 })
