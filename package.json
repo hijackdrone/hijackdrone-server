@@ -10,9 +10,11 @@
     "socket.io": "^2.2.0"
   },
   "scripts": {
-    "server": "nodemon app.js"
+    "server": "nodemon app.js",
+    "test": "jest"
   },
   "devDependencies": {
-    "concurrently": "^4.1.0"
+    "jest": "^24.7.1",
+    "socket.io-client": "^2.2.0"
   }
 }

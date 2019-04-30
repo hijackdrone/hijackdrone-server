@@ -9,9 +9,9 @@ const port = 4001;
 server.listen(port)
 
 app.get('/',(req,res)=>{
-    res.end('Welcome to API server.');
+    res.end('HIJACK DRONE\'s API server.');
 });
-let users=0;
+
 let room=[];
 
 io.on('connection', (socket)=>{
@@ -33,11 +33,10 @@ io.on('connection', (socket)=>{
                     room[idx].control=[false,''];
                     socket.to(room[idx].pw).emit('crdis');
                 }
-                if(--room[idx].user===0) room.splice(idx,1);
+                if(!room[idx].control && !room[idx].drone) room.splice(idx,1);
             }
         }
         console.log('room :',room)
-        users--;
     });
 
     // 2 joining room
@@ -57,7 +56,7 @@ io.on('connection', (socket)=>{
                 socket.to(pw).emit('connected');
             }
         }else{
-            socket.emit('rejected room');
+            socket.emit('rejected room',roomAvailable[1]);
             console.log('rejected room',roomAvailable[1]);
         }
     });
@@ -68,7 +67,7 @@ io.on('connection', (socket)=>{
             const idx=room.findIndex(e=>e.pw === pw);
             if(idx<0) socket.emit('err', 'room not existing');
             else{
-                room[idx].user--;
+                socket.leave(pw);
                 if(type==='d'){
                     room[idx].drone=[false,''];
                     socket.to(room[idx].pw).emit('drdis');
@@ -77,9 +76,7 @@ io.on('connection', (socket)=>{
                     room[idx].control=[false,''];
                     socket.to(room[idx].pw).emit('crdis');
                 }
-                socket.leave(pw);
-
-                if(room[idx].user === 0) room.splice(idx,1);
+                if(!room[idx].control && !room[idx].drone) room.splice(idx,1);
                 console.log('room :',room);
             }
         }
@@ -98,8 +95,7 @@ const checkRoom=(idx,pw,type,socketID)=>{
     // if(idx<0) return [false, 'can\'t find room'];
     if(room[idx]){ //room exist?
         console.log('room exist');
-        if(room[idx].user === 1){
-            room[idx].user+=1;
+        if(room[idx].drone || room[idx].control){
             const existUserType = room[idx].drone[0]?'d':'c';
             if( existUserType === type ) return [false, `${existUserType} already exists.`];
             if( type === 'd') room[idx].drone=[true,socketID];
@@ -110,14 +106,16 @@ const checkRoom=(idx,pw,type,socketID)=>{
         console.log('room doesn\'t exist');
         if(type==='d'){
             room.push({
-                pw, user:1, drone: [true, socketID], control: [false,'']
+                pw, drone: [true, socketID], control: [false,'']
             });
         }
         else if(type==='c'){
             room.push({
-                pw, user:1, drone: [false,''], control: [true, socketID]
+                pw, drone: [false,''], control: [true, socketID]
             });
         }
         return [true,`made room ${pw}`];
     }
 }
+
+exports.server = server.listen(port); //for test server.
