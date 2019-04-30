@@ -107,8 +107,8 @@ io.on('connection', (socket)=>{
 const checkRoom=(idx,pw,type,socketID)=>{
     // if(idx<0) return [false, 'can\'t find room'];
     if(room[idx]){ //room exist?
-        console.log('room exist');
-        if(room[idx].drone[0] ^ room[idx].control[0] === 1){ //xor operation
+        // console.log('room exist');
+        if((room[idx].drone[0] || room[idx].control[0]) && !(room[idx].drone[0] && room[idx].control[0]) ){ //xor operation
             const existUserType = room[idx].drone[0]?'d':'c';
             if( existUserType === type ) return [false, `${existUserType} already exists.`];
             if( type === 'd') room[idx].drone=[true,socketID];
@@ -116,7 +116,7 @@ const checkRoom=(idx,pw,type,socketID)=>{
             return [true,true];
         }else return [false, '1:1 connection already made.'];
     }else{
-        console.log('room doesn\'t exist');
+        // console.log('room doesn\'t exist');
         if(type==='d'){
             room.push({
                 pw, drone: [true, socketID], control: [false,'']
