@@ -117,5 +117,3 @@ const checkRoom=(idx,pw,type,socketID)=>{
         return [true,`made room ${pw}`];
     }
 }
-
-exports.server = server.listen(port); //for test server.
