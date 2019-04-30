@@ -16,7 +16,7 @@ let room=[];
 
 io.on('connection', (socket)=>{
     const id=socket.id;
-    console.log(`user ${id} connected`,++users);
+    console.log(`user ${id} connected`);
     socket.on('greeting',(value)=>{
         console.log(value,id);
     });
