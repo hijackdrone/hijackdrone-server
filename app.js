@@ -76,7 +76,7 @@ io.on('connection', (socket)=>{
                     room[idx].control=[false,''];
                     socket.to(room[idx].pw).emit('crdis');
                 }
-                if(!room[idx].control && !room[idx].drone) room.splice(idx,1);
+                if(!room[idx].control[0] && !room[idx].drone[0]) room.splice(idx,1);
                 console.log('room :',room);
             }
         }
@@ -95,11 +95,11 @@ const checkRoom=(idx,pw,type,socketID)=>{
     // if(idx<0) return [false, 'can\'t find room'];
     if(room[idx]){ //room exist?
         console.log('room exist');
-        if(room[idx].drone || room[idx].control){
+        if(room[idx].drone[0] || room[idx].control[0]){
             const existUserType = room[idx].drone[0]?'d':'c';
             if( existUserType === type ) return [false, `${existUserType} already exists.`];
             if( type === 'd') room[idx].drone=[true,socketID];
-            else room[idx].controller=[true,socketID];
+            else room[idx].control=[true,socketID];
             return [true,true];
         }else return [false, '1:1 connection already made.'];
     }else{
