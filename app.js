@@ -13,6 +13,15 @@ app.get('/',(req,res)=>{
 });
 
 let room=[];
+// 최후의 수단.
+// let cleanRoom=setInterval(()=>{
+//     const len_prev=room.length;
+//     room=room.filter(e=>{
+//         return e.drone[0] || e.control[0]
+//     });
+//     const len_next=room.length;
+//     console.log(len_prev-len_next,'room(s) cleaned.');
+// },60000);
 
 io.on('connection', (socket)=>{
     const id=socket.id;
@@ -43,6 +52,10 @@ io.on('connection', (socket)=>{
     socket.on('find room', value=>{
         pw=value[0];
         type=value[1];
+        if(pw.length===0){
+            socket.emit('rejected room','room name must be longer than 0')
+            return;
+        }
         const idx=room.findIndex(e=>e.pw === pw);
         const roomAvailable = checkRoom(idx,pw,type,socket.id); //[ true|false, errorMessage ]
         console.log(roomAvailable);
@@ -95,7 +108,7 @@ const checkRoom=(idx,pw,type,socketID)=>{
     // if(idx<0) return [false, 'can\'t find room'];
     if(room[idx]){ //room exist?
         console.log('room exist');
-        if(room[idx].drone[0] || room[idx].control[0]){
+        if(room[idx].drone[0] ^ room[idx].control[0] === 1){ //xor operation
             const existUserType = room[idx].drone[0]?'d':'c';
             if( existUserType === type ) return [false, `${existUserType} already exists.`];
             if( type === 'd') room[idx].drone=[true,socketID];
