@@ -108,6 +108,11 @@ const checkRoom=(idx,pw,type,socketID)=>{
     // if(idx<0) return [false, 'can\'t find room'];
     if(room[idx]){ //room exist?
         // console.log('room exist');
+        if(!room[idx].drone[0] && !room[idx].control[1]){ //false & false room
+            if(type === 'd' ) room[idx].drone=[true,socketID];
+            else room[idx].control=[true,socketID];
+            return [true, 'false && false room error solved.']
+        }
         if((room[idx].drone[0] || room[idx].control[0]) && !(room[idx].drone[0] && room[idx].control[0]) ){ //xor operation
             const existUserType = room[idx].drone[0]?'d':'c';
             if( existUserType === type ) return [false, `${existUserType} already exists.`];
