@@ -125,7 +125,7 @@ const checkRoom=(idx,pw,type,socketID)=>{
         // 뭔가 있다.
         if(room[idx].control.length === 4 && type==='c'){ // control 방 다참
             return [false, `${type} already exists.`];
-        } else if(room[idx].control.length <= 2 && type==='c'){ // control 방 들어가자.
+        } else if(room[idx].control.length === 2 && type==='c'){ // control 방 들어가자.
             try{
                 room[idx].control.push(true,socketID);
             } catch(e) { // control not existed
@@ -133,7 +133,7 @@ const checkRoom=(idx,pw,type,socketID)=>{
             }
             if(room[idx].drone[0]) return [true, true];
             else return [false, 'waiting drone.'];
-        } else if(room[idx].drone[0] && type==='d'){ // drone 방 들어가자.
+        } else if(!room[idx].drone[0] && type==='d'){ // drone 방 들어가자.
             room[idx].drone=[true,socketID];
             if(room[idx].control.length === 4) return [true, true]; // 2:1 connection fin
             else return [false, 'waiting control'];
