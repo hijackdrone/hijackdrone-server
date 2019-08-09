@@ -67,6 +67,7 @@ io.on('connection', (socket)=>{
             if(roomAvailable[1]===true){
                 socket.emit('connected');
                 socket.to(pw).emit('connected');
+                socket.broadcast.emit('connected'); // need to be fixed
             }
         }else{
             socket.emit('rejected room',roomAvailable[1]);
