@@ -4,7 +4,7 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
-const port = 4001;
+const port = 4000;
 
 server.listen(port)
 
@@ -101,6 +101,9 @@ io.on('connection', (socket)=>{
         const data=value[1];
         // console.log(pw,data);
         socket.to(pw).emit('accept move',data);
+    });
+    socket.on('debug',value=>{
+	    console.log('from debug ::', value);
     });
 })
 
