@@ -108,7 +108,7 @@ io.on('connection', (socket)=>{
 })
 
 const checkRoom=(idx,pw,type,socketID)=>{
-    // if(idx<0) return [false, 'can\'t find room'];
+    // type = 'd' or 'c'
     if(room[idx]){ //room exist?
         // console.log('room exist');
         if(!room[idx].drone[0] && !room[idx].control[1]){ //false & false room
@@ -116,13 +116,25 @@ const checkRoom=(idx,pw,type,socketID)=>{
             else room[idx].control=[true,socketID];
             return [true, 'false && false room error solved.']
         }
-        if((room[idx].drone[0] || room[idx].control[0]) && !(room[idx].drone[0] && room[idx].control[0]) ){ //xor operation
-            const existUserType = room[idx].drone[0]?'d':'c';
-            if( existUserType === type ) return [false, `${existUserType} already exists.`];
-            if( type === 'd') room[idx].drone=[true,socketID];
-            else room[idx].control=[true,socketID];
-            return [true,true];
-        }else return [false, '1:1 connection already made.'];
+        // 뭔가 있다.
+        if(room[idx].drone.length === 4 && type==='d'){ // drone 방 다참
+            return [false, `${type} already exists.`];
+        } else if(room[idx].drone.length <= 2 && type==='d'){ // drone 방 들어가자.
+            try{
+                room[idx].drone.push(true,socketID);
+            } catch(e) { // drone not existed
+                room[idx].drone=[true,socketID];
+            }
+            if(room[idx].control[0]) return [true, true];
+            else return [false, 'waiting controller.'];
+        } else if(room[idx].control[0] && type==='c'){ // controller 방 들어가자.
+            room[idx].control=[true,socketID];
+            if(room[idx].drone.length === 4) return [true, true];
+            else return [false, 'waiting drone'];
+        } else { // unknown error
+            const roomToJson=JSON.stringify(room);
+            return [false, `unknown error, room : ${roomToJson}`];
+        }
     }else{
         // console.log('room doesn\'t exist');
         if(type==='d'){
