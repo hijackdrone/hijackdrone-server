@@ -81,13 +81,19 @@ io.on('connection', (socket)=>{
             if(idx<0) socket.emit('err', 'room not existing');
             else{
                 socket.leave(pw);
-                if(type==='d'){
-                    room[idx].drone=[false,''];
-                    socket.to(room[idx].pw).emit('drdis');
-                }
-                else {
+                if(type==='c'){
+                    if(room[idx].control[1] === socket.id){
+                        room[idx].control = room[idx].control.slice(2,4);
+                        
+                    }else{
+                        room[idx].control = room[idx].control.slice(0,2);
+                    }
                     room[idx].control=[false,''];
                     socket.to(room[idx].pw).emit('crdis');
+                }
+                else {
+                    room[idx].drone=[false,''];
+                    socket.to(room[idx].pw).emit('drdis');
                 }
                 if(!room[idx].control[0] && !room[idx].drone[0]) room.splice(idx,1);
                 console.log('room :',room);
@@ -117,20 +123,20 @@ const checkRoom=(idx,pw,type,socketID)=>{
             return [true, 'false && false room error solved.']
         }
         // 뭔가 있다.
-        if(room[idx].drone.length === 4 && type==='d'){ // drone 방 다참
+        if(room[idx].control.length === 4 && type==='c'){ // control 방 다참
             return [false, `${type} already exists.`];
-        } else if(room[idx].drone.length <= 2 && type==='d'){ // drone 방 들어가자.
+        } else if(room[idx].control.length <= 2 && type==='c'){ // control 방 들어가자.
             try{
-                room[idx].drone.push(true,socketID);
-            } catch(e) { // drone not existed
-                room[idx].drone=[true,socketID];
+                room[idx].control.push(true,socketID);
+            } catch(e) { // control not existed
+                room[idx].control=[true,socketID];
             }
-            if(room[idx].control[0]) return [true, true];
-            else return [false, 'waiting controller.'];
-        } else if(room[idx].control[0] && type==='c'){ // controller 방 들어가자.
-            room[idx].control=[true,socketID];
-            if(room[idx].drone.length === 4) return [true, true];
-            else return [false, 'waiting drone'];
+            if(room[idx].drone[0]) return [true, true];
+            else return [false, 'waiting drone.'];
+        } else if(room[idx].drone[0] && type==='d'){ // drone 방 들어가자.
+            room[idx].drone=[true,socketID];
+            if(room[idx].control.length === 4) return [true, true]; // 2:1 connection fin
+            else return [false, 'waiting control'];
         } else { // unknown error
             const roomToJson=JSON.stringify(room);
             return [false, `unknown error, room : ${roomToJson}`];
