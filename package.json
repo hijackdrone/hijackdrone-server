@@ -6,15 +6,21 @@
   "author": "lsb918 <lsb918@uos.ac.kr>",
   "license": "MIT",
   "dependencies": {
+    "@types/express": "^4.17.0",
+    "@types/socket.io": "^2.1.2",
     "express": "^4.17.1",
     "socket.io": "^2.2.0"
   },
   "scripts": {
-    "server": "nodemon app.js",
-    "test": "jest"
+    "dev:start": "npm-run-all build start",
+    "dev": "nodemon --watch src -e ts,ejs --exec npm run dev:start",
+    "test": "jest",
+    "tsc": "tsc",
+    "start": "tsc && node build/app.js"
   },
   "devDependencies": {
     "jest": "^24.8.0",
-    "socket.io-client": "^2.2.0"
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3"
   }
 }
