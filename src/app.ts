@@ -35,13 +35,19 @@ Socket.on('connection', (socket) => {
 	const id = socket.id;
 	log(`user ${id} connected.`);
 
-	socket.on('disconnect', (socket) => {
+	socket.on('disconnect', () => {
 		exitUser(id);
 		log(`user ${id} disconnected.`);
 		/**
 		 *  send crdis or drdis, -> just send 'wait' ?
-		 * 
 		 * */
+		socket.emit('wait');
+	});
+
+	socket.on('leave room', value => {
+		exitUser(id);
+		const {idx}=findRoomIdxWithUserId(id);
+		log(`user ${id} leaved room ${Rooms[idx].name}`);
 	});
 
 	socket.on('find room', value => {
@@ -65,29 +71,24 @@ Socket.on('connection', (socket) => {
 				room.drones=[{id: id}];
 			}
 			Rooms.push(room);
-			/**
-			 * send 'found room' to socket id user.
-			 * 
-			 * 
-			 */
+			socket.emit('found room',roomName);
 		} else {
 			// room exists -> check available
 			const check = available(idx, roll);
 			if (check.status) {
 				addUser(idx, id, roll);
-				/** check room's status
-				 * & if connected -> send 'connected' to roomName
-				 * 
-				 * 
-				 * 
-				 * */ 
+				if(isRoomFull(idx)){
+					// socket.emit('connected');
+					socket.to(roomName).emit('connected');
+				}else {
+					socket.emit('found room',roomName);
+				}
 			} else {
 				socket.emit('rejected room', check.msg);
 				log(`rejected room, to access ${JSON.stringify(Rooms[idx])}`);
 			}
-
 		}
-	})
+	});
 });
 
 function findRoom(name: string): number {
@@ -103,7 +104,7 @@ function available(roomIdx: number, roll: string): Result {
 				res.status = true;
 			} else {
 				res.status = (room.controllers).length < MAX_CONTROLLER;
-				res.msg = res.status ? '' : 'max controller';
+				res.msg = res.status ? '' : 'Max # of controller';
 			}
 			break;
 		case 'd':
@@ -111,12 +112,12 @@ function available(roomIdx: number, roll: string): Result {
 				res.status = true;
 			} else {
 				res.status = (room.drones).length < MAX_DRONE;
-				res.msg = res.status ? '' : 'max drone';
+				res.msg = res.status ? '' : 'Max # of drone';
 			}
 			break;
 		default:
 			res.status = false;
-			res.msg = res.status ? '' : 'hack';
+			res.msg = res.status ? '' : 'Here comes hacker.';
 			break;
 	}
 	return res;
@@ -142,39 +143,44 @@ function addUser(idx: number, id: string, roll: string): void {
 			break;
 	}
 }
-function exitUser(id: string, roomName?: string, roll?: string): void {
-	let idx: number;
-	if (roomName && roll) {
-		idx = findRoom(roomName);
-		switch (roll) {
-			case 'c':
-				const controllers = Rooms[idx].controllers!.filter(e => e.id !== id);
-				Rooms[idx].controllers = controllers;
-				break;
-			case 'd':
-				const drones = Rooms[idx].drones!.filter(e => e.id !== id);
-				Rooms[idx].drones = drones;
-				break;
-			default:
-				break;
-		}
-	} else {
-		// find...
-		let res: boolean = false;
-		idx = Rooms.findIndex(room => {
-			if (room.controllers) {
-				res = (room.controllers.filter(user => user.id === id)).length > 0;
-				if (res) return true;
-			}
-			if (room.drones) {
-				res = (room.drones.filter(user => user.id === id)).length > 0;
-				if (res) return true;
-			}
-			return false;
-		});
+function exitUser(id: string): void {
+	const {idx,roll} = findRoomIdxWithUserId(id);
+	switch (roll) {
+		case 'c':
+			const controllers = Rooms[idx].controllers!.filter(e => e.id !== id);
+			Rooms[idx].controllers = controllers;
+			break;
+		case 'd':
+			const drones = Rooms[idx].drones!.filter(e => e.id !== id);
+			Rooms[idx].drones = drones;
+			break;
+		default:
+			log(`exitUser ${id} may not worked.`);
+			break;
 	}
 	deleteVacantRoom(idx);
+}
 
+function findRoomIdxWithUserId(id: string): {idx: number, roll: string}{
+	let roll: string='';
+	return {idx: Rooms.findIndex(room => {
+		let res;
+		if (room.controllers) {
+			res = (room.controllers.filter(user => user.id === id)).length > 0;
+			if (res){
+				roll='c';
+				return true;
+			}
+		}
+		if (room.drones) {
+			res = (room.drones.filter(user => user.id === id)).length > 0;
+			if (res){
+				roll='d';
+				return true;
+			}
+		}
+		return false;
+	}), roll}
 }
 function deleteVacantRoom(idx: number): void {
 	if (idx < 0) {
@@ -201,4 +207,10 @@ function deleteVacantRoom(idx: number): void {
 function log(msg: string): void {
 	const timestamp = (new Date()).toISOString();
 	console.log(timestamp, msg);
+}
+function isRoomFull(idx: number): boolean{
+	if(Rooms[idx].controllers && Rooms[idx].drones){
+		return (Rooms[idx].controllers!).length === MAX_CONTROLLER && (Rooms[idx].drones!).length === MAX_DRONE
+	}
+	return false;
 }
