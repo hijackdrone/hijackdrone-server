@@ -99,7 +99,7 @@ Socket.on('connection', function (socket) {
     });
 });
 function findRoom(name) {
-    return Rooms.findIndex(function (e) { e.name === name; });
+    return Rooms.findIndex(function (room) { return room.name === name; });
 }
 function available(roomIdx, roll) {
     var room = Rooms[roomIdx];

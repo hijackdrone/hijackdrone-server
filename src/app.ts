@@ -104,7 +104,7 @@ Socket.on('connection', (socket) => {
 });
 
 function findRoom(name: string): number {
-	return Rooms.findIndex(e => { return e.name === name })
+	return Rooms.findIndex(function(room) { return room.name === name })
 }
 
 function available(roomIdx: number, roll: string): Result {
@@ -179,7 +179,7 @@ function exitUser(id: string): void {
 
 function findRoomIdxWithUserId(id: string): {idx: number, roll: string}{
 	let roll: string='';
-	return {idx: Rooms.findIndex(room => {
+	return {idx: Rooms.findIndex(function(room) {
 		let res;
 		if (room.controllers) {
 			res = (room.controllers.filter(user => user.id === id)).length > 0;
