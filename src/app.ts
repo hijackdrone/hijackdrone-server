@@ -104,6 +104,11 @@ Socket.on('connection', (socket) => {
 		}
 		log(`find room results : ${JSON.stringify(Rooms)}`);
 	});
+	socket.on('move',value=>{ 
+		const roomName=value[0];
+		const data=value[1]; // 이 부분에 데이터 양이 많아질 것.
+		socket.to(roomName).emit('accept move',data);
+	});
 });
 
 function findRoom(name: string): number {
