@@ -104,7 +104,7 @@ Socket.on('connection', (socket) => {
 });
 
 function findRoom(name: string): number {
-	return Rooms.findIndex(e => { e.name === name })
+	return Rooms.findIndex(e => { return e.name === name })
 }
 
 function available(roomIdx: number, roll: string): Result {
