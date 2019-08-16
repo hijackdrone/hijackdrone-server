@@ -89,16 +89,13 @@ Socket.on('connection', (socket) => {
 			log(`available restuls : ${JSON.stringify(check)}`);
 			if (check.status) {
 				addUser(idx, id, roll);
+				socket.emit('found room',roomName);
+				socket.join(roomName);
+				log(`user ${id} entered room "${roomName}"`);
 				if(isRoomFull(idx)){
-					// socket.emit('connected');
-					socket.emit('found room',roomName);
-					socket.join(roomName);
+					socket.emit('connected');
 					socket.to(roomName).emit('connected');
 					log(`${roomName} connected. ${JSON.stringify(Rooms[idx])}`);
-				}else {
-					socket.emit('found room',roomName);
-					socket.join(roomName);
-					log(`user ${id} entered room "${roomName}"`);
 				}
 			} else {
 				socket.emit('rejected room', check.msg);
