@@ -40,7 +40,7 @@ Socket.on('connection', (socket) => {
 		if(idx>=0){
 			socket.to(Rooms[idx].name).emit('wait');
 		}
-		exitUser(id);
+		exitUser(id,socket);
 		log(`user ${id} disconnected.`);
 	});
 
@@ -51,7 +51,7 @@ Socket.on('connection', (socket) => {
 			const roomName=Rooms[idx].name;
 			socket.emit('wait');
 			log(`user ${id} will leave room ${roomName}`);
-			exitUser(id);
+			exitUser(id,socket);
 		} catch(err){
 			log(`user ${id} changed roll`);
 		}
@@ -79,6 +79,7 @@ Socket.on('connection', (socket) => {
 			}
 			Rooms.push(room);
 			socket.emit('found room',roomName);
+			socket.join(roomName);
 			log(`user ${id} created room "${roomName}"`);
 		} else {
 			// room exists -> check available
@@ -88,10 +89,13 @@ Socket.on('connection', (socket) => {
 				addUser(idx, id, roll);
 				if(isRoomFull(idx)){
 					// socket.emit('connected');
+					socket.emit('found room',roomName);
+					socket.join(roomName);
 					socket.to(roomName).emit('connected');
 					log(`${roomName} connected. ${JSON.stringify(Rooms[idx])}`);
 				}else {
 					socket.emit('found room',roomName);
+					socket.join(roomName);
 					log(`user ${id} entered room "${roomName}"`);
 				}
 			} else {
@@ -155,17 +159,19 @@ function addUser(idx: number, id: string, roll: string): void {
 			break;
 	}
 }
-function exitUser(id: string): void {
+function exitUser(id: string, socket: io.Socket): void {
 	const {idx,roll} = findRoomIdxWithUserId(id);
 	try {
 		switch (roll) {
 			case 'c':
 				const controllers = Rooms[idx].controllers!.filter(e => e.id !== id);
 				Rooms[idx].controllers = controllers;
+				socket.leave(Rooms[idx].name);
 				break;
 			case 'd':
 				const drones = Rooms[idx].drones!.filter(e => e.id !== id);
 				Rooms[idx].drones = drones;
+				socket.leave(Rooms[idx].name);
 				break;
 			default:
 				// log(`exitUser ${id} may not worked.`);
