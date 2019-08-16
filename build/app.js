@@ -99,6 +99,11 @@ Socket.on('connection', function (socket) {
         }
         log("find room results : " + JSON.stringify(Rooms));
     });
+    socket.on('move', function (value) {
+        var roomName = value[0];
+        var data = value[1]; // 이 부분에 데이터 양이 많아질 것.
+        socket.to(roomName).emit('accept move', data);
+    });
 });
 function findRoom(name) {
     return Rooms.findIndex(function (room) { return room.name === name; });
