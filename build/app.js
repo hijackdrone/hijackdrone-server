@@ -72,16 +72,18 @@ Socket.on('connection', function (socket) {
             }
             Rooms.push(room);
             socket.emit('found room', roomName);
-            log("user " + id + " entered room \"" + roomName + "\"");
+            log("user " + id + " created room \"" + roomName + "\"");
         }
         else {
             // room exists -> check available
             var check = available(idx, roll);
+            log("available restuls : " + JSON.stringify(check));
             if (check.status) {
                 addUser(idx, id, roll);
                 if (isRoomFull(idx)) {
                     // socket.emit('connected');
                     socket.to(roomName).emit('connected');
+                    log(roomName + " connected. " + JSON.stringify(Rooms[idx]));
                 }
                 else {
                     socket.emit('found room', roomName);
@@ -93,6 +95,7 @@ Socket.on('connection', function (socket) {
                 log("rejected room, to access " + JSON.stringify(Rooms[idx]));
             }
         }
+        log("find room results : " + JSON.stringify(Rooms));
     });
 });
 function findRoom(name) {
