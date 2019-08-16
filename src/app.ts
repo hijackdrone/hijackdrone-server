@@ -79,7 +79,7 @@ Socket.on('connection', (socket) => {
 			}
 			Rooms.push(room);
 			socket.emit('found room',roomName);
-			log(`user ${id} entered room "${roomName}"`);
+			log(`user ${id} created room "${roomName}"`);
 		} else {
 			// room exists -> check available
 			const check = available(idx, roll);
@@ -98,8 +98,8 @@ Socket.on('connection', (socket) => {
 				socket.emit('rejected room', check.msg);
 				log(`rejected room, to access ${JSON.stringify(Rooms[idx])}`);
 			}
-			log(`find room results : ${JSON.stringify(Rooms)}`);
 		}
+		log(`find room results : ${JSON.stringify(Rooms)}`);
 	});
 });
 
