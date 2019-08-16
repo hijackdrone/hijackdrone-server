@@ -18,7 +18,9 @@ var app = express_1.default();
 var server = new http.Server(app);
 var Socket = socket_io_1.default(server);
 var port = 4000;
-server.listen(port);
+server.listen(port, function () {
+    log("server started.");
+});
 app.get('/', function (req, res) {
     res.end('HIJACK DRONE\'s API server.');
 });
@@ -33,7 +35,7 @@ Socket.on('connection', function (socket) {
         if (idx >= 0) {
             socket.to(Rooms[idx].name).emit('wait');
         }
-        exitUser(id);
+        exitUser(id, socket);
         log("user " + id + " disconnected.");
     });
     socket.on('leave room', function (value) {
@@ -43,7 +45,7 @@ Socket.on('connection', function (socket) {
             var roomName = Rooms[idx].name;
             socket.emit('wait');
             log("user " + id + " will leave room " + roomName);
-            exitUser(id);
+            exitUser(id, socket);
         }
         catch (err) {
             log("user " + id + " changed roll");
@@ -72,6 +74,7 @@ Socket.on('connection', function (socket) {
             }
             Rooms.push(room);
             socket.emit('found room', roomName);
+            socket.join(roomName);
             log("user " + id + " created room \"" + roomName + "\"");
         }
         else {
@@ -82,11 +85,14 @@ Socket.on('connection', function (socket) {
                 addUser(idx, id, roll);
                 if (isRoomFull(idx)) {
                     // socket.emit('connected');
+                    socket.emit('found room', roomName);
+                    socket.join(roomName);
                     socket.to(roomName).emit('connected');
                     log(roomName + " connected. " + JSON.stringify(Rooms[idx]));
                 }
                 else {
                     socket.emit('found room', roomName);
+                    socket.join(roomName);
                     log("user " + id + " entered room \"" + roomName + "\"");
                 }
             }
@@ -153,17 +159,19 @@ function addUser(idx, id, roll) {
             break;
     }
 }
-function exitUser(id) {
+function exitUser(id, socket) {
     var _a = findRoomIdxWithUserId(id), idx = _a.idx, roll = _a.roll;
     try {
         switch (roll) {
             case 'c':
                 var controllers = Rooms[idx].controllers.filter(function (e) { return e.id !== id; });
                 Rooms[idx].controllers = controllers;
+                socket.leave(Rooms[idx].name);
                 break;
             case 'd':
                 var drones = Rooms[idx].drones.filter(function (e) { return e.id !== id; });
                 Rooms[idx].drones = drones;
+                socket.leave(Rooms[idx].name);
                 break;
             default:
                 // log(`exitUser ${id} may not worked.`);

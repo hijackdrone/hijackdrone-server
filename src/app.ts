@@ -20,7 +20,9 @@ const app = express();
 const server = new http.Server(app);
 const Socket = io(server);
 const port = 4000;
-server.listen(port)
+server.listen(port,()=>{
+	log(`server started.`);
+})
 
 app.get('/', (req, res) => {
 	res.end('HIJACK DRONE\'s API server.');
