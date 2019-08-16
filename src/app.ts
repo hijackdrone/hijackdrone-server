@@ -36,18 +36,25 @@ Socket.on('connection', (socket) => {
 	log(`user ${id} connected.`);
 
 	socket.on('disconnect', () => {
+		const {idx}=findRoomIdxWithUserId(id);
+		if(idx>=0){
+			socket.to(Rooms[idx].name).emit('wait');
+		}
 		exitUser(id);
 		log(`user ${id} disconnected.`);
-		/**
-		 *  send crdis or drdis, -> just send 'wait' ?
-		 * */
-		socket.emit('wait');
 	});
 
 	socket.on('leave room', value => {
-		exitUser(id);
 		const {idx}=findRoomIdxWithUserId(id);
-		log(`user ${id} leaved room ${Rooms[idx].name}`);
+		try { 
+			socket.to(Rooms[idx].name).emit('wait');
+			const roomName=Rooms[idx].name;
+			socket.emit('wait');
+			log(`user ${id} will leave room ${roomName}`);
+			exitUser(id);
+		} catch(err){
+			log(`user ${id} changed roll`);
+		}
 	});
 
 	socket.on('find room', value => {
@@ -72,6 +79,7 @@ Socket.on('connection', (socket) => {
 			}
 			Rooms.push(room);
 			socket.emit('found room',roomName);
+			log(`user ${id} entered room "${roomName}"`);
 		} else {
 			// room exists -> check available
 			const check = available(idx, roll);
@@ -82,6 +90,7 @@ Socket.on('connection', (socket) => {
 					socket.to(roomName).emit('connected');
 				}else {
 					socket.emit('found room',roomName);
+					log(`user ${id} entered room "${roomName}"`);
 				}
 			} else {
 				socket.emit('rejected room', check.msg);
@@ -145,18 +154,22 @@ function addUser(idx: number, id: string, roll: string): void {
 }
 function exitUser(id: string): void {
 	const {idx,roll} = findRoomIdxWithUserId(id);
-	switch (roll) {
-		case 'c':
-			const controllers = Rooms[idx].controllers!.filter(e => e.id !== id);
-			Rooms[idx].controllers = controllers;
-			break;
-		case 'd':
-			const drones = Rooms[idx].drones!.filter(e => e.id !== id);
-			Rooms[idx].drones = drones;
-			break;
-		default:
-			log(`exitUser ${id} may not worked.`);
-			break;
+	try {
+		switch (roll) {
+			case 'c':
+				const controllers = Rooms[idx].controllers!.filter(e => e.id !== id);
+				Rooms[idx].controllers = controllers;
+				break;
+			case 'd':
+				const drones = Rooms[idx].drones!.filter(e => e.id !== id);
+				Rooms[idx].drones = drones;
+				break;
+			default:
+				// log(`exitUser ${id} may not worked.`);
+				break;
+		}
+	} catch(err){
+		log(`---exitUser---\n${err}\n--------------`);
 	}
 	deleteVacantRoom(idx);
 }
@@ -183,7 +196,7 @@ function findRoomIdxWithUserId(id: string): {idx: number, roll: string}{
 	}), roll}
 }
 function deleteVacantRoom(idx: number): void {
-	if (idx < 0) {
+	if (idx >= 0) {
 		const ctrs = Rooms[idx].controllers;
 		const drs = Rooms[idx].drones;
 		let res: boolean = false;
