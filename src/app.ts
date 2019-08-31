@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
 	res.end('HIJACK DRONE\'s API server.');
 });
 
-const MAX_CONTROLLER = 2;
+const MAX_CONTROLLER = 1;
 const MAX_DRONE = 1;
 
 let Rooms: Room[] = [];

@@ -24,7 +24,7 @@ server.listen(port, function () {
 app.get('/', function (req, res) {
     res.end('HIJACK DRONE\'s API server.');
 });
-var MAX_CONTROLLER = 2;
+var MAX_CONTROLLER = 1;
 var MAX_DRONE = 1;
 var Rooms = [];
 Socket.on('connection', function (socket) {
